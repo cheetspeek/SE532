@@ -9,9 +9,11 @@ import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
 
 public class UltraSensor {
+	private static SensorModes sensor;
+
 	public static void main(String[] args) {
 		Port port = LocalEV3.get().getPort("S1");
-		SensorModes sensor = new EV3UltrasonicSensor(port);
+		sensor = new EV3UltrasonicSensor(port);
 		SampleProvider color = sensor.getMode("Distance");
 		float[] sample = new float[color.sampleSize()];
 		int iterate = 0;

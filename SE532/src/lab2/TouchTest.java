@@ -9,9 +9,11 @@ import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
 
 public class TouchTest {
+	private static SensorModes sensor;
+
 	public static void main(String[] args) {
 		Port port = LocalEV3.get().getPort("S1");
-		SensorModes sensor = new EV3TouchSensor(port);
+		sensor = new EV3TouchSensor(port);
 		SampleProvider touched = sensor.getMode("Touch");
 		float[] sample = new float[touched.sampleSize()];
 		touched.fetchSample(sample, 0);

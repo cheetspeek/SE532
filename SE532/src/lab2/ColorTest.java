@@ -9,9 +9,11 @@ import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
 
 public class ColorTest {
+	private static SensorModes sensor;
+
 	public static void main(String[] args) {
 		Port port = LocalEV3.get().getPort("S1");
-		SensorModes sensor = new EV3ColorSensor(port);
+		sensor = new EV3ColorSensor(port);
 		SampleProvider color = sensor.getMode("Red");
 		float[] sample = new float[color.sampleSize()];
 		int iterate = 0;
