@@ -13,7 +13,7 @@ import lejos.hardware.sensor.EV3ColorSensor;
 import lejos.hardware.sensor.SensorModes;
 import lejos.robotics.SampleProvider;
 
-public class TransitionBeeper {
+public class PWMBeeper {
 	public static void main(String[] args) {
 		
 		Port port = LocalEV3.get().getPort(MotorPort.A.getName());
@@ -21,12 +21,11 @@ public class TransitionBeeper {
 		
 		Port port2 = LocalEV3.get().getPort("S1");
 		
-		newTimer listener = new newTimer(port2, m);
-		Timer timer = new Timer(1, listener);
+		PWMTimer listener = new PWMTimer(port2, m);
+		Timer timer = new Timer(2, listener);
 		
 		timer.start();
 		m.setPower(40);
-		m.forward();
 		LCD.drawString("Running.", 0, 0);
 		Button.DOWN.waitForPressAndRelease();
 		m.close();
@@ -34,7 +33,7 @@ public class TransitionBeeper {
 	}
 }
 
-class newTimer implements TimerListener {
+class PWMTimer implements TimerListener {
 	
 	Port port;
 	SampleProvider color;
@@ -46,9 +45,14 @@ class newTimer implements TimerListener {
 	
 	Boolean foundBlack = false;
 	
-	int transitions = 0;
+	Boolean isTimeForPulse = false;
+	Boolean isFiveSec = false;
 	
-	public newTimer(Port port, UnregulatedMotor m) {
+	int transitions = 0;
+	int RPMcalc = 0;
+	int tickTime = 2;
+	
+	public PWMTimer(Port port, UnregulatedMotor m) {
 		this.port = port;
 		this.m = m;
 		@SuppressWarnings("resource")
@@ -62,14 +66,36 @@ class newTimer implements TimerListener {
 	
 	@Override
 	public void timedOut() {
-		// TODO Auto-generated method stub
+		
 		ticks++;
 		color.fetchSample(sample, 0);
 		currentColor = sample[0];
+		RPMcalc = (transitions / 8) * 12;
 		
-		if (ticks % 500 == 0) {
-			LCD.drawString("RPMs: " + ((transitions / 8) * 12), 1, 1);
+		isTimeForPulse = (ticks % tickTime == 0);
+		isFiveSec = (ticks % 500 == 0);
+		
+		if (isTimeForPulse) {
+			m.forward();
+		}
+		
+		else { m.flt(); }
+		
+		if (ticks % 100 == 0) {
+			LCD.drawString("Ticks: " + ticks, 0, 1);
+		}
+		
+		if (isFiveSec) {
+			LCD.drawString("RPMs: " + RPMcalc, 1, 2);
 			transitions = 0;
+			if (tickTime == 2) {
+				tickTime = 16;
+				LCD.drawString("Slow.", 0, 3);
+			}
+			else {
+				tickTime = 2;
+				LCD.drawString("Fast.", 0, 3);
+			}
 		}
 		
 		if (Math.abs(currentColor - black) <= 0.2) {
