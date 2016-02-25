@@ -25,7 +25,7 @@ public class TransitionBeeper {
 		Timer timer = new Timer(1, listener);
 		
 		timer.start();
-		m.setPower(40);
+		m.setPower(45);
 		m.forward();
 		LCD.drawString("Running.", 0, 0);
 		Button.DOWN.waitForPressAndRelease();
@@ -45,8 +45,10 @@ class newTimer implements TimerListener {
 	float black = (float) 0.2;
 	
 	Boolean foundBlack = false;
+	Boolean isFiveSec = false;
 	
 	int transitions = 0;
+	double RPMcalc = 0.0;
 	
 	public newTimer(Port port, UnregulatedMotor m) {
 		this.port = port;
@@ -66,9 +68,10 @@ class newTimer implements TimerListener {
 		ticks++;
 		color.fetchSample(sample, 0);
 		currentColor = sample[0];
+		RPMcalc = (transitions / 8) * 12;
 		
 		if (ticks % 500 == 0) {
-			LCD.drawString("RPMs: " + ((transitions / 8) * 12), 1, 1);
+			LCD.drawString("RPMs: " + RPMcalc, 1, 1);
 			transitions = 0;
 		}
 		
@@ -78,8 +81,6 @@ class newTimer implements TimerListener {
 				transitions++;
 				Sound.beep();
 			}
-			
-			// LCD.drawString("Black found.", 0, 1);
 		}
 		
 		else if (Math.abs(currentColor - white) <= 0.2) {
@@ -87,9 +88,6 @@ class newTimer implements TimerListener {
 				foundBlack = false;
 				transitions++;
 			}
-			
-			// LCD.drawString("White found.", 0, 1);
 		}
-		
 	}
 }
