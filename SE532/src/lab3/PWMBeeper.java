@@ -21,7 +21,7 @@ public class PWMBeeper {
 		Timer timer = new Timer(1, listener);
 		
 		timer.start();
-		m.setPower(80);
+		m.setPower(100);
 		LCD.drawString("Running.", 0, 0);
 		Button.DOWN.waitForPressAndRelease();
 		m.close();
