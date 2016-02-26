@@ -12,6 +12,7 @@ import lejos.hardware.port.Port;
 import lejos.hardware.sensor.EV3ColorSensor;
 import lejos.hardware.sensor.SensorModes;
 import lejos.robotics.SampleProvider;
+import lejos.robotics.filter.MeanFilter;
 
 public class TransitionBeeper {
 	public static void main(String[] args) {
@@ -25,7 +26,7 @@ public class TransitionBeeper {
 		Timer timer = new Timer(1, listener);
 		
 		timer.start();
-		m.setPower(45);
+		m.setPower(100);
 		m.forward();
 		LCD.drawString("Running.", 0, 0);
 		Button.DOWN.waitForPressAndRelease();
@@ -41,11 +42,13 @@ class newTimer implements TimerListener {
 	float[] sample;
 	UnregulatedMotor m;
 	
-	float white = (float) 0.75;
-	float black = (float) 0.2;
+	float white = (float) 100.0;
+	float black = (float) -10.0;
 	
 	Boolean foundBlack = false;
-	Boolean isFiveSec = false;
+	
+	Boolean isTimeForPulse = false;
+	int tickTime = 4;
 	
 	int transitions = 0;
 	double RPMcalc = 0.0;
@@ -56,38 +59,64 @@ class newTimer implements TimerListener {
 		@SuppressWarnings("resource")
 		SensorModes sensor = new EV3ColorSensor(port);
 		color = sensor.getMode("Red");
+		color = new MeanFilter(color, 5);
 		this.sample = new float[color.sampleSize()];
 	}
 
 	int ticks = 0;
 	float currentColor = 0;
+	Boolean convertedBlackValue;
+	Boolean convertedWhiteValue;
 	
 	@Override
 	public void timedOut() {
 		// TODO Auto-generated method stub
 		ticks++;
+		
 		color.fetchSample(sample, 0);
-		currentColor = sample[0];
-		RPMcalc = (transitions / 8) * 12;
+		currentColor = (float) Math.floor(181.82 * sample[0] - 36.364);
 		
-		if (ticks % 500 == 0) {
-			LCD.drawString("RPMs: " + RPMcalc, 1, 1);
-			transitions = 0;
-		}
+		isTimeForPulse = (ticks % tickTime == 0);
 		
-		if (Math.abs(currentColor - black) <= 0.2) {
-			if (foundBlack == false) {
-				foundBlack = true;
-				transitions++;
-				Sound.beep();
+		convertedBlackValue = Math.abs(currentColor - black) <= 20;
+		convertedWhiteValue = Math.abs(currentColor - white) <= 20;
+		
+		if (ticks % 2400 == 0) {
+			if (RPMcalc > 120) {
+				tickTime++;
+			}
+			else if (RPMcalc < 120) {
+				if (tickTime != 1) { tickTime--; }
 			}
 		}
 		
-		else if (Math.abs(currentColor - white) <= 0.2) {
+		if (isTimeForPulse) {
+			m.forward();
+		} else {
+			m.flt(); 
+		}
+		
+		if (convertedBlackValue) {
+			if (foundBlack == false) {
+				foundBlack = true;
+				transitions++;
+			}
+		}
+		
+		else if (convertedWhiteValue) {
 			if (foundBlack == true) {
 				foundBlack = false;
 				transitions++;
 			}
+		}
+		
+		if (ticks % 2400 == 0) {
+			// RPMcalc = (transitions / 8) * 12;
+			RPMcalc = ((60 * transitions) / 6) / 5;
+			LCD.drawString("RPMs: " + RPMcalc, 0, 1);
+			LCD.drawString("Tick time: " + tickTime, 0, 2);
+			LCD.drawString("Transitions: " + transitions, 0, 3);
+			transitions = 0;
 		}
 	}
 }

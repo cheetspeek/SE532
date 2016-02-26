@@ -19,7 +19,7 @@ public class ColorTest2 {
 		
 		int iterate = 0;
 		
-		while (iterate <= 4) {
+		while (iterate <= 10) {
 			color.fetchSample(sample, 0);
 			float val = (float) Math.floor(181.82 * sample[0] - 36.364);
 			LCD.drawString("Value: " + val, 0, iterate); 
