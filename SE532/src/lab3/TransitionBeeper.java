@@ -1,19 +1,17 @@
 package lab3;
 
 import lejos.hardware.Button;
-import lejos.hardware.Sound;
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.lcd.LCD;
-import lejos.utility.Delay;
-import lejos.utility.Timer;
-import lejos.utility.TimerListener;
-import lejos.hardware.motor.*;
+import lejos.hardware.motor.UnregulatedMotor;
 import lejos.hardware.port.MotorPort;
 import lejos.hardware.port.Port;
 import lejos.hardware.sensor.EV3ColorSensor;
 import lejos.hardware.sensor.SensorModes;
 import lejos.robotics.SampleProvider;
 import lejos.robotics.filter.MeanFilter;
+import lejos.utility.Timer;
+import lejos.utility.TimerListener;
 
 public class TransitionBeeper {
 	public static void main(String[] args) {
@@ -49,10 +47,10 @@ class newTimer implements TimerListener {
 	Boolean foundBlack = false;
 	
 	Boolean isTimeForPulse = false;
-	double tickTime = 1;
+	int tickTime = 1;
 	
-	double transitions = 0.0;
-	double RPMcalc = 0.0;
+	int transitions = 0;
+	int RPMcalc = 0;
 	
 	public newTimer(Port port, UnregulatedMotor m) {
 		this.port = port;
@@ -82,11 +80,10 @@ class newTimer implements TimerListener {
 		convertedWhiteValue = Math.abs(currentColor - white) <= .2;
 		
 		if (ticks % 600 == 0) {
-			if (RPMcalc > 120.0) {
-				tickTime = tickTime + 0.5;
-			}
-			else if (RPMcalc < 120.0) {
-				if (tickTime != 1) { tickTime = tickTime - 0.5; }
+			if (RPMcalc > 120) {
+				tickTime = tickTime + 1;
+			} else if (RPMcalc < 120) {
+				if (tickTime != 1) { tickTime = tickTime - 1; }
 			} 
 		}
 		
@@ -111,9 +108,10 @@ class newTimer implements TimerListener {
 		}
 		
 		if (ticks % 600 == 0) {
-			RPMcalc = (transitions / 6.0) * 37.5;
+			LCD.clear();
+			RPMcalc = (transitions / 6) * 37;
 			LCD.drawString("RPMs: " + RPMcalc, 0, 1);
-			LCD.drawString("Tick time: " + tickTime, 0, 2);
+			LCD.drawString("Pulses every: " + tickTime, 0, 2);
 			LCD.drawString("Transitions: " + transitions, 0, 3);
 			LCD.drawString("Ticks: " + ticks, 0, 4);
 			transitions = 0;
