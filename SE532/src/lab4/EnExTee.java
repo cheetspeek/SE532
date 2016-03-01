@@ -12,35 +12,20 @@ import lejos.robotics.SampleProvider;
 
 public class EnExTee {
 	private static SensorModes sensor;
+	private static Port port;
+	private static Port port2;
+	private static Port port3;
+	private static float[] sample;
+	private static RegulatedMotor m1;
+	private static RegulatedMotor m2;
 	
 	public static void main(String[] args) {
-		Port port = LocalEV3.get().getPort(MotorPort.A.getName());
-		RegulatedMotor m1 = new EV3LargeRegulatedMotor(port);
-		
-		Port port2 = LocalEV3.get().getPort(MotorPort.B.getName());
-		RegulatedMotor m2 = new EV3LargeRegulatedMotor(port2);
-		
-		RegulatedMotor[] list = {m2};
-		
-		/*
-		Port port3 = LocalEV3.get().getPort("S1");
-		sensor = new EV3UltrasonicSensor(port3);
-		SampleProvider color = sensor.getMode("Distance");
-		float[] sample = new float[color.sampleSize()]; */
-		
-		LCD.drawString("Running.", 0, 0);
+		setup();
 		
 		int iterations = 0;
 		
-		m1.setSpeed(300);
-		m2.setSpeed(300);
-		m1.setAcceleration(165);
-		m2.setAcceleration(165);
-		
-		m1.synchronizeWith(list);
-		
-		while (iterations <= 8) {
-			if (iterations == 8) {
+		while (iterations <= 2) {
+			if (iterations == 6) {
 				rotate(m1,m2,1600);
 				iterations++;
 			}
@@ -57,6 +42,30 @@ public class EnExTee {
 		m1.close();
 		m2.close();
 		
+	}
+	
+	public static void setup() {
+		port = LocalEV3.get().getPort(MotorPort.A.getName());
+		m1 = new EV3LargeRegulatedMotor(port);
+		
+		port2 = LocalEV3.get().getPort(MotorPort.B.getName());
+		m2 = new EV3LargeRegulatedMotor(port2);
+		
+		RegulatedMotor[] list = {m2};
+	
+		port3 = LocalEV3.get().getPort("S1");
+		sensor = new EV3UltrasonicSensor(port3);
+		SampleProvider color = sensor.getMode("Distance");
+		sample = new float[color.sampleSize()];
+		
+		LCD.drawString("Running.", 0, 0);
+		
+		m1.setSpeed(300);
+		m2.setSpeed(300);
+		m1.setAcceleration(165);
+		m2.setAcceleration(165);
+		
+		m1.synchronizeWith(list);
 	}
 	
 	public static void rotate(RegulatedMotor m1, RegulatedMotor m2, int speed) {
