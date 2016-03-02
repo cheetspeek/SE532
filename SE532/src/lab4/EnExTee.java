@@ -1,5 +1,6 @@
 package lab4;
 
+import lejos.hardware.Sound;
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.lcd.LCD;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
@@ -8,8 +9,9 @@ import lejos.hardware.port.Port;
 import lejos.hardware.sensor.EV3UltrasonicSensor;
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.SampleProvider;
-import lejos.utility.Timer;
-import lejos.utility.TimerListener;
+import lejos.utility.Delay;
+// import lejos.utility.Timer;
+// import lejos.utility.TimerListener;
 
 public class EnExTee {
 	private static EV3UltrasonicSensor sensor;
@@ -18,8 +20,14 @@ public class EnExTee {
 	private static Port port3;
 	private static RegulatedMotor m1;
 	private static RegulatedMotor m2;
+	private static SampleProvider UV;
+	private static float[] sample;
 
 	protected static int speed = 0;
+	
+	protected static float distance = 0;
+	
+	protected static int recalVal = 7;
 
 	protected static Boolean isObstructed = false;
 
@@ -27,12 +35,14 @@ public class EnExTee {
 		setup();
 
 		int iterations = 0;
+		
+		calibrate();
 
 		// loop guard and if must be the same
-		while (iterations <= 8) {
+		while (iterations <= 24) {
 			if (isObstructed == false) {
 				// Sends GoBot to final block
-				if (iterations == 8) {
+				if (iterations == 24) {
 					speed = 1600;
 					rotate(m1,m2,speed);
 					iterations++;
@@ -43,8 +53,12 @@ public class EnExTee {
 					rotate(m1,m2,speed);
 					iterations++;
 				}
-				// Turns GoBot
+				// Turns GoBot and checks for re-calibrate 
 				else {
+					if (iterations % recalVal == 0) {
+						recalVal = recalVal + 8;
+						recalibrate();
+					}
 					speed = -165;
 					rotate(m1,m2,speed);
 					iterations++;
@@ -68,13 +82,16 @@ public class EnExTee {
 
 		port3 = LocalEV3.get().getPort("S1");
 		sensor = new EV3UltrasonicSensor(port3);
+		
+		UV = sensor.getMode("Distance");
+		sample = new float[UV.sampleSize()];
 
-		UVTimer listener = new UVTimer(port2, sensor);
-		Timer timer = new Timer(1, listener);
+		// UVTimer listener = new UVTimer(port2, sensor);
+		// Timer timer = new Timer(1, listener);
 
 		LCD.drawString("Running.", 0, 0);
 
-		timer.start();
+		// timer.start();
 
 		m1.setSpeed(750);
 		m2.setSpeed(750);
@@ -91,6 +108,43 @@ public class EnExTee {
 		m1.endSynchronization();
 		m1.waitComplete();
 		m2.waitComplete();
+	}
+	
+	public static void calibrate() {
+		UV.fetchSample(sample, 0);
+		distance = sample[0];
+		Sound.beep();
+		LCD.drawString("Distance: " + distance, 0, 1);
+		Delay.msDelay(3000);
+		speed = -165;
+		rotate(m1,m2,speed);
+	}
+	
+	public static void recalibrate() {
+		UV.fetchSample(sample, 0);
+		double difference = (double) distance - sample[0];
+		Sound.beep();
+		LCD.drawString("Distance: " + difference, 0, 1);
+		Delay.msDelay(3000);
+		double rotations = difference / 0.258;
+		int degrees = ((int) (rotations * 360)) / -1;
+		LCD.drawString("Degrees: " + degrees, 0, 2);
+		rotateBack(m1,m2,degrees);
+		UV.fetchSample(sample, 0);
+		LCD.drawString("New distance: " + sample[0], 0, 3);
+	}
+	
+	public static void rotateBack(RegulatedMotor m1, RegulatedMotor m2, int speed) {
+		m1.setAcceleration(150);
+		m2.setAcceleration(150);
+		m1.startSynchronization();
+		m1.rotate(speed, true);
+		m2.rotate(speed, true);
+		m1.endSynchronization();
+		m1.waitComplete();
+		m2.waitComplete();
+		m1.setAcceleration(300);
+		m2.setAcceleration(300);
 	}
 
 	public static void interrupt() {
@@ -115,7 +169,7 @@ public class EnExTee {
 		 */
 	}
 }
-
+/*
 class UVTimer implements TimerListener {
 
 	Port port;
@@ -155,7 +209,7 @@ class UVTimer implements TimerListener {
 		if (ticks % 500 == 0) {
 			LCD.drawString("Value: " + sample[0], 0, 1); 
 		}
-		*/
+		
 	}
 
-}
+} */
