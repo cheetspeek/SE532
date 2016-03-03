@@ -49,7 +49,7 @@ public class EnExTee implements TimerListener {
 				// Sends GoBot to final block
 				if (iterations == 32) {
 					//angle = 1600;
-					angle = 1645;
+					angle = 1690;
 					rotate(m1,m2,angle);
 					iterations++;
 				}
@@ -67,7 +67,7 @@ public class EnExTee implements TimerListener {
 						recalibrate();
 					}
 					//angle = -165;
-					angle = -168;
+					angle = -166;
 					rotate(m1,m2,angle);
 					iterations++;
 				}
@@ -137,9 +137,9 @@ public class EnExTee implements TimerListener {
 		timer.start();
 		
 		USsensor.fetchSample(sample, 0);
-		spinSensorMotor.rotate(41);
-		spinSensorMotor.rotate(-82);
-		spinSensorMotor.rotate(41);
+		spinSensorMotor.rotate(82);
+		spinSensorMotor.rotate(-165);
+		spinSensorMotor.rotate(82);
 		
 		timer.stop();
 		
