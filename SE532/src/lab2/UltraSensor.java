@@ -18,7 +18,7 @@ public class UltraSensor {
 		float[] sample = new float[color.sampleSize()];
 		int iterate = 0;
 		
-		while (iterate <= 4) {
+		while (iterate <= 10) {
 			color.fetchSample(sample, 0);
 			LCD.drawString("Value: " + sample[0], 0, iterate); 
 			Delay.msDelay(3000);
