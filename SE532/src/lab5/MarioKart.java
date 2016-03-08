@@ -74,12 +74,12 @@ public class MarioKart implements TimerListener {
 		rightSample = new float[rightSensor.sampleSize()];
 
 		timer = new Timer(1, new MarioKart());
-		speed = 300;
+		speed = 350;
 
 		m1.setSpeed(speed);
 		m2.setSpeed(speed);
-		m1.setAcceleration(700);
-		m2.setAcceleration(700);
+		m1.setAcceleration(900);
+		m2.setAcceleration(900);
 
 		m1.synchronizeWith(list);
 	}
@@ -135,15 +135,15 @@ public class MarioKart implements TimerListener {
 		leftColor.fetchSample(leftSample, 0);
 		rightColor.fetchSample(rightSample, 0);
 		
-		if ( (Math.abs(rightSample[0] - black) < 0.1) ) {
-			// m2.setSpeed(speed + 150);
-			m1.setSpeed(100);
+		if ( (Math.abs(rightSample[0] - black) < 0.2) ) {
+			m2.setSpeed(speed + 50);
+			m1.setSpeed(50);
 			
 		}
 		
-		else if ( (Math.abs(leftSample[0] - black) < 0.1) ) {
-			// m1.setSpeed(speed + 150);
-			m2.setSpeed(100);
+		else if ( (Math.abs(leftSample[0] - black) < 0.2) ) {
+			m1.setSpeed(speed + 50);
+			m2.setSpeed(50);
 		}
 		
 		else {
