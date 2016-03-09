@@ -1,7 +1,6 @@
 package lab5;
 
 import lejos.hardware.Button;
-import lejos.hardware.Sound;
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.lcd.LCD;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
@@ -83,15 +82,6 @@ public class MarioKart implements TimerListener {
 
 		m1.synchronizeWith(list);
 	}
-
-	public static void rotate(RegulatedMotor m1, RegulatedMotor m2, int angle) {
-		m1.startSynchronization();
-		m1.rotate(angle, true);
-		m2.rotate(Math.abs(angle), true);
-		m1.endSynchronization();
-		m1.waitComplete();
-		m2.waitComplete();
-	}
 	
 	public static void calibrate() {
 		LCD.drawString("Press UP to set", 0, 0);
@@ -117,18 +107,6 @@ public class MarioKart implements TimerListener {
 		Delay.msDelay(5000);
 		
 	}
-	/*
-	private static void spinLeftWheel() {
-		m2.setSpeed(400);
-		Delay.msDelay(100);
-		m2.setSpeed(150);
-	}
-	
-	private static void spinRightWheel() {
-		m1.setSpeed(400);
-		Delay.msDelay(100);
-		m1.setSpeed(150);
-	}*/
 	
 	@Override
 	public void timedOut() {
