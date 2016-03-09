@@ -35,7 +35,7 @@ public class MarioKart60 implements TimerListener {
 	private static float rightBlack;
 	private static float rightWhite;
 	
-	private static int threshold;
+	private static float threshold;
 
 	private static int speed;
 	private static int acceleration;
@@ -102,7 +102,7 @@ public class MarioKart60 implements TimerListener {
 		leftSample = new float[leftSensor.sampleSize()];
 		rightSample = new float[rightSensor.sampleSize()];
 		
-		threshold = 44;
+		threshold = 0.44f;
 
 		timer = new Timer(1, new MarioKart60());
 
@@ -185,7 +185,7 @@ public class MarioKart60 implements TimerListener {
 		
 		//One sensor, front wheel drive
 		int multiplier = -3;
-		int rotateVal = (int) ((threshold - leftSample[0]) * multiplier);
+		int rotateVal = (int) (((threshold - leftSample[0]) * multiplier) * 100);
 		LCD.drawString("RotateVal: " + rotateVal, 0, 4);
 		
 		leftWheel.startSynchronization();
