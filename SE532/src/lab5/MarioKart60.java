@@ -35,7 +35,7 @@ public class MarioKart60 implements TimerListener {
 	private static float rightBlack;
 	private static float rightWhite;
 	
-	private static float threshold;
+	private static int threshold;
 
 	private static int speed;
 	private static int acceleration;
@@ -47,8 +47,8 @@ public class MarioKart60 implements TimerListener {
 
 		timer.start();
 
-		rightWheel.backward();
-		leftWheel.backward();
+		//rightWheel.backward();
+		//leftWheel.backward();
 		//rightWheel.forward();
 		//leftWheel.forward();
 
@@ -102,13 +102,14 @@ public class MarioKart60 implements TimerListener {
 		leftSample = new float[leftSensor.sampleSize()];
 		rightSample = new float[rightSensor.sampleSize()];
 		
-		//threshold = (leftWhite + leftBlack) / 2;
-		threshold = (float) 0.45;
+		threshold = 44;
 
 		timer = new Timer(1, new MarioKart60());
 
-		speed = 375;
-		acceleration = 1500;
+		//speed = 375;
+		//acceleration = 1500;
+		speed = 300;
+		acceleration = 1000;
 		rightWheel.setSpeed(speed);
 		leftWheel.setSpeed(speed);
 		rightWheel.setAcceleration(acceleration);
@@ -150,12 +151,15 @@ public class MarioKart60 implements TimerListener {
 
 	@Override
 	public void timedOut() {
+		rightWheel.backward();
+		leftWheel.backward();
+		
 		leftColor.fetchSample(leftSample, 0);
 		rightColor.fetchSample(rightSample, 0);
 
-		LCD.drawString("Threshold: " + threshold, 0, 3);
-		LCD.drawString("Sample: " + leftSample[0], 0, 4);
+		LCD.drawString("Sample: " + leftSample[0], 0, 3);
 		
+		/*
 		//Front wheel drive
 //		if ( (Math.abs(leftSample[0] - leftWhite) < 0.2) && (Math.abs(rightSample[0] - rightWhite) < 0.2) ) {
 //			LCD.drawString("Stay straight", 0, 5);
@@ -176,6 +180,19 @@ public class MarioKart60 implements TimerListener {
 			rightWheel.setSpeed(speed);
 			leftWheel.setSpeed(speed);
 		}
+		*/
+		
+		
+		//One sensor, front wheel drive
+		int multiplier = -3;
+		int rotateVal = (int) ((threshold - leftSample[0]) * multiplier);
+		LCD.drawString("RotateVal: " + rotateVal, 0, 4);
+		
+		leftWheel.startSynchronization();
+		leftWheel.rotate(rotateVal, true);
+		rightWheel.rotate(rotateVal, true);
+		leftWheel.endSynchronization();
+		
 		
 		/*
 		//Rear wheel drive
