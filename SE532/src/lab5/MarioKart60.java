@@ -34,8 +34,8 @@ public class MarioKart60 {
 	private static float leftWhiteThreshold;
 	private static float rightWhiteThreshold;
 	
-	private static final int SPEED = 87; //80
-	private static final int TURN_SPEED = 31; //25
+	private static final int SPEED = 84; //80
+	private static final int TURN_SPEED = 28; //25
 	
 	public static void main(String[] args) {
 		setup();
