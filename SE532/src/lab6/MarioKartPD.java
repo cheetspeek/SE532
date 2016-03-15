@@ -82,12 +82,13 @@ public class MarioKartPD {
 			middleRightValue = middleRightSample[0];
 			farRightValue = farRightSample[0];
 			
-			errorCalc(farLeftValue, middleLeftValue, middleRightValue, farRightValue);
+			float error = errorCalc(farLeftValue, middleLeftValue, middleRightValue, farRightValue);
 			
 			LCD.drawString("FL: " + farLeftSample[0], 0, 0);
 			LCD.drawString("ML: " + middleLeftSample[0], 0, 1);
 			LCD.drawString("MR: " + middleRightSample[0], 0, 2);
 			LCD.drawString("FR: " + farRightSample[0], 0, 3);
+			LCD.drawString("Error: " + error, 0, 4);
 			
 			/*
 			if ( rightSample[0] < rightWhiteThreshold ) {
@@ -106,7 +107,8 @@ public class MarioKartPD {
 			rightWheel.backward();
 			leftWheel.backward();*/
 			
-			Delay.msDelay(1000);
+			Delay.msDelay(500);
+			LCD.clear();
 		}
 	}
 	
@@ -118,22 +120,22 @@ public class MarioKartPD {
 		float FRError;
 		
 		float valFLDiff = Math.abs(valFL - white);
-		if (valFLDiff > 0.02) { FLError = (valFLDiff - scaleDifference) * 100;}
-		else {FLError = 0;}
+		if (valFLDiff > 0.03) { FLError = (valFLDiff / scaleDifference) * 100;}
+		else { FLError = 0; }
 		
 		float valMLDiff = Math.abs(valML - black);
-		if (valFLDiff > 0.02) { MLError = (valFLDiff - scaleDifference) * 100;}
-		else {MLError = 0;}
+		if (valMLDiff > 0.03) { MLError = (valMLDiff / scaleDifference) * 100;}
+		else { MLError = 0; }
 		
 		float valMRDiff = Math.abs(valMR - black);
-		if (valFLDiff > 0.02) { MRError = (valFLDiff - scaleDifference) * 100;}
-		else {MRError = 0;}
+		if (valMRDiff > 0.03) { MRError = (valMRDiff / scaleDifference) * 100;}
+		else { MRError = 0; }
 		
 		float valFRDiff = Math.abs(valFR - white);
-		if (valFLDiff > 0.02) { FRError = (valFLDiff - scaleDifference) * 100;}
-		else {FRError = 0;}
+		if (valFRDiff > 0.03) { FRError = (valFRDiff / scaleDifference) * 100;}
+		else { FRError = 0; }
 		
-		error = MRError + FRError - valFLDiff - valMLDiff;
+		error = FRError + MRError - MLError - FLError;
 		
 		return error;
 	}
