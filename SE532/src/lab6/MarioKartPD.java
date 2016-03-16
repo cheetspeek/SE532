@@ -17,7 +17,7 @@ public class MarioKartPD {
 	private static SensorModes middleLeftSensor;
 	private static SensorModes middleRightSensor;
 	private static SensorModes farRightSensor;
-	
+
 	// Declare four color providers.
 	private static SampleProvider farLeftColor;
 	private static SampleProvider middleLeftColor;
@@ -27,69 +27,85 @@ public class MarioKartPD {
 	// Declare servo ports.
 	private static Port portA;
 	private static Port portD;
-	
+
 	// Declare sensor ports.
 	private static Port port1;
 	private static Port port2;
 	private static Port port3;
 	private static Port port4;
-	
+
 	// Declare servo motors.
 	private static UnregulatedMotor rightWheel;
 	private static UnregulatedMotor leftWheel;
-	
+
 	// Declare sensor data arrays.
 	private static float[] farLeftSample;
 	private static float[] middleLeftSample;
 	private static float[] middleRightSample;
 	private static float[] farRightSample;
-	
+
 	// Declare sensor data variables.
-	private static float farLeftValue;
-	private static float middleLeftValue;
-	private static float middleRightValue;
-	private static float farRightValue;
-	
+	private static int farLeftValue;
+	private static int middleLeftValue;
+	private static int middleRightValue;
+	private static int farRightValue;
+
 	// Declare black and white storage variables.
-	private static float black;
-	private static float white;
+	private static float farLeftBlack = 999;
+	private static float middleLeftBlack = 999;
+	private static float middleRightBlack = 999;
+	private static float farRightBlack = 999;
+	private static float farLeftWhite = -999;
+	private static float middleLeftWhite = -999;
+	private static float middleRightWhite = -999;
+	private static float farRightWhite = -999;
+	private static float farLeftStart;
+	private static float middleLeftStart;
+	private static float middleRightStart;
+	private static float farRightStart;
+	private static float farLeftDiff;
+	private static float middleLeftDiff;
+	private static float middleRightDiff;
+	private static float farRightDiff;
+
+
 	private static float scaleDifference;
 
 	private static final int SPEED = 84; //80
 	private static final int TURN_SPEED = 28; //25
-	
+
 	public static void main(String[] args) {
 		setup();
 
 		calibrate();
-		
+
 		LCD.clear();
 		/*
 		rightWheel.setPower(SPEED);
 		leftWheel.setPower(SPEED);
-		
+
 		rightWheel.backward();
 		leftWheel.backward();
-		*/
+		 */
 		while (! Button.DOWN.isDown()) {
 			farLeftColor.fetchSample(farLeftSample, 0);
 			middleLeftColor.fetchSample(middleLeftSample, 0);
 			middleRightColor.fetchSample(middleRightSample, 0);	
 			farRightColor.fetchSample(farRightSample, 0);
-			
-			farLeftValue = farLeftSample[0];
-			middleLeftValue = middleLeftSample[0];
-			middleRightValue = middleRightSample[0];
-			farRightValue = farRightSample[0];
-			
-			float error = errorCalc(farLeftValue, middleLeftValue, middleRightValue, farRightValue);
-			
-			LCD.drawString("FL: " + farLeftSample[0], 0, 0);
-			LCD.drawString("ML: " + middleLeftSample[0], 0, 1);
-			LCD.drawString("MR: " + middleRightSample[0], 0, 2);
-			LCD.drawString("FR: " + farRightSample[0], 0, 3);
+
+			farLeftValue = (int) zeroToHundredCal(farLeftSample[0], farLeftWhite, farLeftBlack);
+			middleLeftValue = (int) zeroToHundredCal(middleLeftSample[0], middleLeftWhite, middleLeftBlack);
+			middleRightValue = (int) zeroToHundredCal(middleRightSample[0], middleRightWhite, middleRightBlack);
+			farRightValue = (int) zeroToHundredCal(farRightSample[0], farRightWhite, farRightBlack);
+
+			LCD.drawString("FL: " + farLeftValue, 0, 0);
+			LCD.drawString("ML: " + middleLeftValue, 0, 1);
+			LCD.drawString("MR: " + middleRightValue, 0, 2);
+			LCD.drawString("FR: " + farRightValue, 0, 3);
+
+			int error = errorCalc(farLeftValue, middleLeftValue, middleRightValue, farRightValue);
 			LCD.drawString("Error: " + error, 0, 4);
-			
+
 			/*
 			if ( rightSample[0] < rightWhiteThreshold ) {
 				leftWheel.setPower(TURN_SPEED);
@@ -103,41 +119,36 @@ public class MarioKartPD {
 				rightWheel.setPower(SPEED);
 				leftWheel.setPower(SPEED);
 			}
-			
+
 			rightWheel.backward();
 			leftWheel.backward();*/
-			
+
 			Delay.msDelay(500);
 			LCD.clear();
 		}
 	}
-	
-	public static float errorCalc(float valFL, float valML, float valMR, float valFR) {
-		float error = 0;
-		float FLError;
-		float MLError;
-		float MRError;
-		float FRError;
+
+	public static int errorCalc(int s1, int s2, int s3, int s4) {
+		int totalError = 0;
+		int middleError = Math.abs(s2 - s3) / 2;
+		int leftError = 0;
+		int rightError = 0;
 		
-		float valFLDiff = Math.abs(valFL - white);
-		if (valFLDiff > 0.03) { FLError = (valFLDiff / scaleDifference) * 100;}
-		else { FLError = 0; }
+		if (s2 < s3) {
+			leftError = Math.abs(s1 - s2) / 2;
+			totalError = (middleError + leftError);
+				
+		}
+		else { // if(s2 > s3) {
+			rightError = Math.abs(s3 - s4) / 2;
+			totalError = (middleError + rightError) * -1;
+		}
 		
-		float valMLDiff = Math.abs(valML - black);
-		if (valMLDiff > 0.03) { MLError = (valMLDiff / scaleDifference) * 100;}
-		else { MLError = 0; }
-		
-		float valMRDiff = Math.abs(valMR - black);
-		if (valMRDiff > 0.03) { MRError = (valMRDiff / scaleDifference) * 100;}
-		else { MRError = 0; }
-		
-		float valFRDiff = Math.abs(valFR - white);
-		if (valFRDiff > 0.03) { FRError = (valFRDiff / scaleDifference) * 100;}
-		else { FRError = 0; }
-		
-		error = FRError + MRError - MLError - FLError;
-		
-		return error;
+//		if (s2 > 86 && s3 > 86) {
+//			totalError += 50;
+//		}
+
+		return totalError;
 	}
 
 	public static void setup() {
@@ -148,17 +159,17 @@ public class MarioKartPD {
 		leftWheel = new UnregulatedMotor(portD);
 
 		port1 = LocalEV3.get().getPort("S1");
-		farLeftSensor = new EV3ColorSensor(port1);
-		
+		farRightSensor = new EV3ColorSensor(port1);
+
 		port2 = LocalEV3.get().getPort("S2");
-		middleLeftSensor = new EV3ColorSensor(port2);
-		
+		middleRightSensor = new EV3ColorSensor(port2);
+
 		port3 = LocalEV3.get().getPort("S3");
-		middleRightSensor = new EV3ColorSensor(port3);
+		middleLeftSensor = new EV3ColorSensor(port3);
 
 		port4 = LocalEV3.get().getPort("S4");
-		farRightSensor = new EV3ColorSensor(port4);
-    	
+		farLeftSensor = new EV3ColorSensor(port4);
+
 		farLeftColor = farLeftSensor.getMode("Red");
 		middleLeftColor = middleLeftSensor.getMode("Red");
 		middleRightColor = middleRightSensor.getMode("Red");
@@ -175,35 +186,108 @@ public class MarioKartPD {
 		LCD.drawString("black color.", 0, 1);
 		Button.UP.waitForPressAndRelease();
 
-		farLeftColor.fetchSample(farLeftSample, 0);
-		middleLeftColor.fetchSample(middleLeftSample, 0);
-		middleRightColor.fetchSample(middleRightSample, 0);
-		farRightColor.fetchSample(farRightSample, 0);
-		
-		black = (farLeftSample[0] + middleLeftSample[0] + middleRightSample[0] + farRightSample[0]) / 4;
+		findMinBlackValues();
 
 		LCD.drawString("Black calibrated.", 0, 0);
 		LCD.drawString("Press UP to set", 0, 1);
 		LCD.drawString("white color.", 0, 2);
 		Button.UP.waitForPressAndRelease();
-		
+
+		findMaxWhiteValues();
+
+		//findStartValues();
+
+		//findDifferences();
+
+		LCD.clear();
+		//LCD.drawString("Diff: " + scaleDifference, 0, 2);
+
+		Delay.msDelay(5000);
+	}
+
+
+	public static void findMinBlackValues() {	
+		for (int i = 0; i < 50; i++) {
+			farLeftColor.fetchSample(farLeftSample, 0);
+			if (farLeftSample[0] < farLeftBlack) {
+				farLeftBlack = farLeftSample[0];
+			}
+		}
+
+		for (int i = 0; i < 50; i++) {
+			middleLeftColor.fetchSample(middleLeftSample, 0);
+			if (middleLeftSample[0] < middleLeftBlack) {
+				middleLeftBlack = middleLeftSample[0];
+			}
+		}
+
+		for (int i = 0; i < 50; i++) {
+			middleRightColor.fetchSample(middleRightSample, 0);
+			if (middleRightSample[0] < middleRightBlack) {
+				middleRightBlack = middleRightSample[0];
+			}
+		}
+
+		for (int i = 0; i < 50; i++) {
+			farRightColor.fetchSample(farRightSample, 0);
+			if (farRightSample[0] < farRightBlack) {
+				farRightBlack = farRightSample[0];
+			}
+		}
+	}
+
+	public static void findMaxWhiteValues() {
+		for (int i = 0; i < 50; i++) {
+			farLeftColor.fetchSample(farLeftSample, 0);
+			if (farLeftSample[0] > farLeftWhite) {
+				farLeftWhite = farLeftSample[0];
+			}
+		}
+
+		for (int i = 0; i < 50; i++) {
+			middleLeftColor.fetchSample(middleLeftSample, 0);
+			if (middleLeftSample[0] > middleLeftWhite) {
+				middleLeftWhite = middleLeftSample[0];
+			}
+		}
+
+		for (int i = 0; i < 50; i++) {
+			middleRightColor.fetchSample(middleRightSample, 0);
+			if (middleRightSample[0] > middleRightWhite) {
+				middleRightWhite = middleRightSample[0];
+			}
+		}
+
+		for (int i = 0; i < 50; i++) {
+			farRightColor.fetchSample(farRightSample, 0);
+			if (farRightSample[0] > farRightWhite) {
+				farRightWhite = farRightSample[0];
+			}
+		}
+	}
+
+	public static float zeroToHundredCal(float val, float max, float min) {		
+		return ((val - min)/(max - min)) * 100;
+	}
+
+	/*
+	public static void findStartValues() {
 		farLeftColor.fetchSample(farLeftSample, 0);
 		middleLeftColor.fetchSample(middleLeftSample, 0);
 		middleRightColor.fetchSample(middleRightSample, 0);
 		farRightColor.fetchSample(farRightSample, 0);
-		
-		white = (farLeftSample[0] + middleLeftSample[0] + middleRightSample[0] + farRightSample[0]) / 4;
-		
-		scaleDifference = white - black;
-		
-		// leftWhiteThreshold = leftWhite * 0.2f;
-		// rightWhiteThreshold = rightWhite * 0.2f;
 
-		LCD.clear();
-		LCD.drawString("Black: " + black, 0, 1);
-		LCD.drawString("White: " + white, 0, 2);
-		LCD.drawString("Diff: " + scaleDifference, 0, 2);
-
-		Delay.msDelay(5000);
+		farLeftStart = farLeftSample[0];
+		middleLeftStart = middleLeftSample[0];
+		middleRightStart = middleRightSample[0];
+		farRightStart = farRightSample[0];
 	}
+
+	public static void findDifferences() {
+		farLeftDiff = farLeftWhite - farLeftBlack;
+		middleLeftDiff = middleLeftWhite - middleLeftBlack;
+		middleRightDiff = middleRightWhite - middleRightBlack;
+		farRightDiff = farRightWhite - farRightBlack;
+	}
+	 */
 }
