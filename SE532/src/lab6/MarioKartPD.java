@@ -97,14 +97,19 @@ public class MarioKartPD {
 			middleLeftValue = (int) zeroToHundredCal(middleLeftSample[0], middleLeftWhite, middleLeftBlack);
 			middleRightValue = (int) zeroToHundredCal(middleRightSample[0], middleRightWhite, middleRightBlack);
 			farRightValue = (int) zeroToHundredCal(farRightSample[0], farRightWhite, farRightBlack);
+			
+			farLeftValue = correctValues(farLeftValue);
+			middleLeftValue = correctValues(middleLeftValue);
+			middleRightValue = correctValues(middleRightValue);
+			farRightValue = correctValues(farRightValue);
 
 			LCD.drawString("FL: " + farLeftValue, 0, 0);
 			LCD.drawString("ML: " + middleLeftValue, 0, 1);
 			LCD.drawString("MR: " + middleRightValue, 0, 2);
 			LCD.drawString("FR: " + farRightValue, 0, 3);
 
-			int error = errorCalc(farLeftValue, middleLeftValue, middleRightValue, farRightValue);
-			LCD.drawString("Error: " + error, 0, 4);
+			//int error = errorCalc(farLeftValue, middleLeftValue, middleRightValue, farRightValue);
+			//LCD.drawString("Error: " + error, 0, 4);
 
 			/*
 			if ( rightSample[0] < rightWhiteThreshold ) {
@@ -123,25 +128,43 @@ public class MarioKartPD {
 			rightWheel.backward();
 			leftWheel.backward();*/
 
-			Delay.msDelay(500);
-			LCD.clear();
+			
 		}
 	}
+	
+	public static int correctValues(int value) {
+		if (value > 100) {
+			value = 100;
+		}
+		else if (value < 0) {
+			value = 0;
+		}
+		return value;
+	}
 
+	public static int middleErrorCalc(int left, int right) {
+		return (int) ((left-right) * 0.33);
+	}
+	
+	public static int outerErrorCalc(int outer, int inner) {
+		return (int) (((outer-inner) * -0.5) + 68);
+	}
+	
+	/*
 	public static int errorCalc(int s1, int s2, int s3, int s4) {
 		int totalError = 0;
-		int middleError = Math.abs(s2 - s3) / 2;
-		int leftError = 0;
-		int rightError = 0;
+		int middleError = (s2 - s3) / 2;
+		int leftError = (100 - s1) / 2;
+		int rightError = (100 - s4) / 2;
 		
-		if (s2 < s3) {
-			leftError = Math.abs(s1 - s2) / 2;
-			totalError = (middleError + leftError);
-				
+		
+		if (s2 > s3) {
+			//leftError = Math.abs(s3 - s4) / 2;
+			totalError = (middleError + leftError) * -1;
 		}
-		else { // if(s2 > s3) {
-			rightError = Math.abs(s3 - s4) / 2;
-			totalError = (middleError + rightError) * -1;
+		else { // if(s2 < s3) - moving to right {
+			// rightError = Math.abs(s1 - s2) / 2;
+			totalError = (middleError + rightError);
 		}
 		
 //		if (s2 > 86 && s3 > 86) {
@@ -150,6 +173,7 @@ public class MarioKartPD {
 
 		return totalError;
 	}
+	*/
 
 	public static void setup() {
 		portA = LocalEV3.get().getPort(MotorPort.A.getName());
@@ -159,16 +183,16 @@ public class MarioKartPD {
 		leftWheel = new UnregulatedMotor(portD);
 
 		port1 = LocalEV3.get().getPort("S1");
-		farRightSensor = new EV3ColorSensor(port1);
+		farLeftSensor = new EV3ColorSensor(port1);
 
 		port2 = LocalEV3.get().getPort("S2");
-		middleRightSensor = new EV3ColorSensor(port2);
+		middleLeftSensor = new EV3ColorSensor(port2);
 
 		port3 = LocalEV3.get().getPort("S3");
-		middleLeftSensor = new EV3ColorSensor(port3);
+		middleRightSensor = new EV3ColorSensor(port3);
 
 		port4 = LocalEV3.get().getPort("S4");
-		farLeftSensor = new EV3ColorSensor(port4);
+		farRightSensor = new EV3ColorSensor(port4);
 
 		farLeftColor = farLeftSensor.getMode("Red");
 		middleLeftColor = middleLeftSensor.getMode("Red");
