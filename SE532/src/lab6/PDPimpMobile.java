@@ -15,8 +15,8 @@ import lejos.utility.Delay;
 
 public class PDPimpMobile{
 	
-	static int MOTOR_SPEED = 90;
-	static double P_COEFF = 0.699;
+	static int MOTOR_SPEED = 88;
+	static double P_COEFF = 0.649;
 	static double D_COEFF = 0.019;
 	
 	static float whiteOne = 0;
